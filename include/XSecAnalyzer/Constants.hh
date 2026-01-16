@@ -63,6 +63,13 @@ constexpr float MUON_VTX_DISTANCE_CUT = 4.; // cm
 constexpr float MUON_LENGTH_CUT = 10.; // cm
 constexpr float MUON_PID_CUT = 0.2;
 constexpr float TRACK_SCORE_CUT = 0.5;
+constexpr float NEUTRAL_PI_SHOWER_SCORE_CUT = 0.5;
+constexpr float NEUTRAL_PI_VTX_ALIGNMENT_CUT = 0.8;
+constexpr float NEUTRAL_PI_CONV_DIST_CUT = 3.; // cm 
+constexpr float NEUTRAL_PI_SHR1_ENERGY_CUT = 0.060; // GeV
+constexpr float NEUTRAL_PI_SHR2_ENERGY_CUT = 0.040; // GeV
+constexpr float NEUTRAL_PI_SHR_dEdx_CUT = 1.; // MeV/cm
+
 
 // Boundaries of the proton containment volume (used in reco only) in cm
 constexpr double PCV_X_MIN =   10.;
@@ -78,6 +85,7 @@ constexpr double NEUTRON_MASS = 0.93956541; // GeV
 constexpr double PROTON_MASS = 0.93827208; // GeV
 constexpr double MUON_MASS = 0.10565837; // GeV
 constexpr double PI_PLUS_MASS = 0.13957000; // GeV
+constexpr double PI_ZERO_MASS = 0.13497680; // GeV
 
 // This binding energy value is used in GENIE v3.0.6
 //constexpr double BINDING_ENERGY = 0.0295; // 40Ar, GeV

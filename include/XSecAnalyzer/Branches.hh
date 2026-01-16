@@ -40,6 +40,8 @@ void set_event_branch_addresses(TTree& etree, AnalysisEvent& ev)
   SetBranchAddress(etree, "n_tracks", &ev.num_tracks_ );
   SetBranchAddress(etree, "n_showers", &ev.num_showers_ );
 
+  
+
   // PFParticle properties
   set_object_input_branch_address( etree, "pfp_generation_v",
     ev.pfp_generation_ );
@@ -98,6 +100,10 @@ void set_event_branch_addresses(TTree& etree, AnalysisEvent& ev)
   SetBranchAddress(etree, "shr_distance", &ev.shr_distance_ );
   SetBranchAddress(etree, "shr_tkfit_gap10_dedx_Y", &ev.shr_tkfit_gap10_dedx_Y_ );
   SetBranchAddress(etree, "shr_tkfit_2cm_dedx_Y", &ev.shr_tkfit_2cm_dedx_Y_ );
+
+  //secondary shower
+  SetBranchAddress(etree, "shr2_id", &ev.shr2_id_ );
+  SetBranchAddress(etree, "shr_energy_second_cali", &ev.shr_energy_second_cali_ );
 
   // Track properties
   set_object_input_branch_address( etree, "trk_pfp_id_v", ev.track_pfp_id_ );
@@ -406,6 +412,10 @@ void set_event_output_branch_addresses(TTree& out_tree, AnalysisEvent& ev,
   set_output_branch_address( out_tree, "shr_distance", &ev.shr_distance_, create, "shr_distance/F" );
   set_output_branch_address( out_tree, "shr_tkfit_gap10_dedx_Y", &ev.shr_tkfit_gap10_dedx_Y_, create, "shr_tkfit_gap10_dedx_Y/F" );
   set_output_branch_address( out_tree, "shr_tkfit_2cm_dedx_Y", &ev.shr_tkfit_2cm_dedx_Y_, create, "shr_tkfit_2cm_dedx_Y/F" );
+
+  //secondary shower
+  set_output_branch_address( out_tree, "shr2_id", &ev.shr2_id_, create, "shr2_id/I" );
+  set_output_branch_address( out_tree, "shr_energy_second_cali", &ev.shr_energy_second_cali_, create, "shr_energy_second_cali/F" );
 
   // Track properties
   set_object_output_branch_address< std::vector<float> >( out_tree,

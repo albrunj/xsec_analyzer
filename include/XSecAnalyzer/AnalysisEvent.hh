@@ -90,6 +90,10 @@ public:
   float shr_tkfit_gap10_dedx_Y_ = BOGUS;
   float shr_tkfit_2cm_dedx_Y_ = BOGUS;
 
+  // Secondary shower
+  int shr2_id_ = BOGUS_INT;
+  float shr_energy_second_cali_ = BOGUS;
+
   // Track properties
   MyPointer< std::vector<unsigned long> > track_pfp_id_;
   MyPointer< std::vector<float> > track_length_;

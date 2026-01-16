@@ -6,6 +6,7 @@
 #include "XSecAnalyzer/Selections/NuMICC1e.hh"
 #include "XSecAnalyzer/Selections/DummySelection.hh"
 #include "XSecAnalyzer/Selections/SelectionFactory.hh"
+#include "XSecAnalyzer/Selections/CC1mu1pi1pi0.hh"
 
 SelectionFactory::SelectionFactory() {
 }
@@ -28,6 +29,9 @@ SelectionBase* SelectionFactory::CreateSelection(
   }
   else if ( selection_name == "Dummy" ) {
     sel = new DummySelection;
+  }
+  else if (selection_name == "CC1mu1pi1pi0") {
+    sel = new CC1mu1pi1pi0;
   }
   else {
     std::cerr << "Selection name requested: " << selection_name
