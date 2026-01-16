@@ -40,7 +40,7 @@ void set_event_branch_addresses(TTree& etree, AnalysisEvent& ev)
   SetBranchAddress(etree, "n_tracks", &ev.num_tracks_ );
   SetBranchAddress(etree, "n_showers", &ev.num_showers_ );
 
-  
+
 
   // PFParticle properties
   set_object_input_branch_address( etree, "pfp_generation_v",
@@ -187,6 +187,9 @@ void set_event_branch_addresses(TTree& etree, AnalysisEvent& ev)
   set_object_input_branch_address( etree, "mc_px", ev.mc_nu_daughter_px_ );
   set_object_input_branch_address( etree, "mc_py", ev.mc_nu_daughter_py_ );
   set_object_input_branch_address( etree, "mc_pz", ev.mc_nu_daughter_pz_ );
+  set_object_input_branch_address( etree, "mc_end_p", ev.mc_end_p_ );
+  set_object_input_branch_address( etree, "mc_n_elastic", ev.mc_n_elastic_ );
+  set_object_input_branch_address( etree, "mc_n_inelastic", ev.mc_n_inelastic_ );
 
   // GENIE and other systematic variation weights
   bool has_genie_mc_weights = ( etree.GetBranch("weightSpline") != nullptr );
@@ -500,4 +503,13 @@ void set_event_output_branch_addresses(TTree& out_tree, AnalysisEvent& ev,
 
   set_object_output_branch_address< std::vector<float> >( out_tree, "mc_pz",
     ev.mc_nu_daughter_pz_, create );
+
+  set_object_output_branch_address< std::vector<float> >( out_tree,
+    "mc_end_p", ev.mc_end_p_, create );
+
+  set_object_output_branch_address< std::vector<int> >( out_tree,
+    "mc_n_elastic", ev.mc_n_elastic_, create );
+
+  set_object_output_branch_address< std::vector<int> >( out_tree,
+    "mc_n_inelastic", ev.mc_n_inelastic_, create );
 }

@@ -53,6 +53,7 @@ constexpr float LEAD_P_MAX_MOM_CUT = 1.; // GeV/c
 constexpr float MUON_P_MIN_MOM_CUT = 0.100; // GeV/c
 constexpr float MUON_P_MAX_MOM_CUT = 1.200; // GeV/c
 constexpr float CHARGED_PI_MOM_CUT = 0.; // GeV/c
+constexpr float NEUTRAL_PI_MOM_CUT = 0. ; // GeV/c
 constexpr float MUON_MOM_QUALITY_CUT = 0.25; // fractional difference
 constexpr float PROTON_MIN_MOM_CUT = 0.3; //GeV/c
 constexpr float PROTON_MAX_MOM_CUT = 1.0; //GeV/c
@@ -68,7 +69,7 @@ constexpr float NEUTRAL_PI_VTX_ALIGNMENT_CUT = 0.8;
 constexpr float NEUTRAL_PI_CONV_DIST_CUT = 3.; // cm 
 constexpr float NEUTRAL_PI_SHR1_ENERGY_CUT = 0.060; // GeV
 constexpr float NEUTRAL_PI_SHR2_ENERGY_CUT = 0.040; // GeV
-constexpr float NEUTRAL_PI_SHR_dEdx_CUT = 1.; // MeV/cm
+constexpr float NEUTRAL_PI_SHR_DEDX_CUT = 1.; // MeV/cm
 
 
 // Boundaries of the proton containment volume (used in reco only) in cm

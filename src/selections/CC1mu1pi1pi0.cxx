@@ -31,7 +31,7 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
         float px = Event->mc_nu_daughter_px_->at( d );
         float py = Event->mc_nu_daughter_py_->at( d );
         float pz = Event->mc_nu_daughter_pz_->at( d );
-	*mc_p3mu = TVector3( px, py, pz );
+	      *mc_p3mu_ = TVector3( px, py, pz );
         break;
       }
     }
@@ -58,7 +58,7 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
       float mom = temp_p3.Mag();
       if ( mom > max_mom ) {
         max_mom = mom;
-	*mc_p3p = temp_p3;
+	      *mc_p3p_ = temp_p3;
       }
     }
   }
@@ -84,14 +84,14 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
       float py = Event->mc_nu_daughter_py_->at( p );
       float pz = Event->mc_nu_daughter_pz_->at( p );
 
-      TVector3 temp_p3 = TVector3( px, py, pz );
+      TVector3 temp_cpi_p3 = TVector3( px, py, pz );
 
       // TODO: add to output branch
       mc_p3_cpi_vec_->push_back( temp_cpi_p3 );
       float mom = temp_cpi_p3.Mag();
       if (mom > max_mom_cpi) {
         max_mom_cpi = mom;
-        *mc_p3cpi_ = temp_p3;
+        *mc_p3cpi_ = temp_cpi_p3;
       }
     }
   }
@@ -111,7 +111,7 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
       float py = Event->mc_nu_daughter_py_->at( p );
       float pz = Event->mc_nu_daughter_pz_->at( p );
 
-      TVector3 temp_p3 = TVector3( px, py, pz );
+      TVector3 temp_pi0_p3 = TVector3( px, py, pz );
 
       // TODO: add to output branch
       mc_p3_pi0_vec_->push_back( temp_pi0_p3 );
@@ -142,21 +142,25 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
 
   // Compute true STVs if the event contains a muon, a charged pion, a neutral pion
   if ( true_muon && true_cpi && true_pi0 ) {
-    double MuonEnergy = real_sqrt( mc_p3mu->Mag()*mc_p3mu->Mag()
+    double MuonEnergy = real_sqrt( mc_p3mu_->Mag()*mc_p3mu_->Mag()
       + MUON_MASS*MUON_MASS );
     //compute proton energy only if leading proton exists
+    double ProtonEnergy = 0.0;
     if (true_lead_p) {
-      double ProtonEnergy = real_sqrt( mc_p3p->Mag()*mc_p3p->Mag()
+      ProtonEnergy = real_sqrt( mc_p3p_->Mag()*mc_p3p_->Mag()
         + PROTON_MASS*PROTON_MASS );
     }
-    double ChargedPionEnergy = real_sqrt( mc_p3cpi->Mag()*mc_p3cpi->Mag()
+    double ChargedPionEnergy = real_sqrt( mc_p3cpi_->Mag()*mc_p3cpi_->Mag()
       + PI_PLUS_MASS*PI_PLUS_MASS );
-    double NeutralPionEnergy = real_sqrt( mc_p3pi0->Mag()*mc_p3pi0->Mag()
+    double NeutralPionEnergy = real_sqrt( mc_p3pi0_->Mag()*mc_p3pi0_->Mag()
       + PI_ZERO_MASS*PI_ZERO_MASS );
 
     STVTools stv_tools;
-    stv_tools.CalculateSTVs( *mc_p3mu, *mc_p3p, *mc_p3cpi, *mc_p3pi0, MuonEnergy, ProtonEnergy, ChargedPionEnergy, NeutralPionEnergy,
+
+    if (true_lead_p){
+      stv_tools.CalculateSTVs( *mc_p3mu_, *mc_p3p_, MuonEnergy, ProtonEnergy,
       calc_type );
+    }
 
     mc_delta_pT_ = stv_tools.ReturnPt();
     mc_delta_phiT_ = stv_tools.ReturnDeltaPhiT() * TMath::Pi()/180.;
@@ -166,8 +170,8 @@ void CC1mu1pi1pi0::compute_true_observables( AnalysisEvent* Event ) {
     mc_delta_pTx_ = stv_tools.ReturnPtx();
     mc_delta_pTy_ = stv_tools.ReturnPty();
 
-    mc_theta_mu_p_ = std::acos( mc_p3mu->Dot(*mc_p3p)
-      / mc_p3mu->Mag() / mc_p3p->Mag() );
+    mc_theta_mu_p_ = std::acos( mc_p3mu_->Dot(*mc_p3p_)
+      / mc_p3mu_->Mag() / mc_p3p_->Mag() );
   }
 }
 
@@ -244,10 +248,10 @@ void CC1mu1pi1pi0::compute_reco_observables( AnalysisEvent* Event ) {
     float pi_dirx = Event->track_dirx_->at( pion_candidate_idx_ );
     float pi_diry = Event->track_diry_->at( pion_candidate_idx_ );
     float pi_dirz = Event->track_dirz_->at( pion_candidate_idx_ );
-
+    
     float pion_mom = LOW_FLOAT;
     float trk_length = Event->track_length_->at( pion_candidate_idx_ );
-    pion_mom =  A + B*trk_length - C*std::pow(trk_length, -1.*D);
+    pion_mom = real_sqrt( trk_length*trk_length + 2.*PI_PLUS_MASS*trk_length );
 
     *p3cpi_ = TVector3( pi_dirx, pi_diry, pi_dirz );
     *p3cpi_ = p3cpi_->Unit() * pion_mom;
@@ -275,30 +279,29 @@ void CC1mu1pi1pi0::compute_reco_observables( AnalysisEvent* Event ) {
     float vtx_x = Event->nu_vx_;
     float vtx_y = Event->nu_vy_;
     float vtx_z = Event->nu_vz_;
-    MyPointer< TVector3 > nu_vtx = TVector3 (vtx_x, vtx_y, vtx_z);
+    *nu_vtx_ = TVector3(vtx_x, vtx_y, vtx_z);
 
     //photon 1
     float shr1_startx = Event->shower_startx_->at( pi0_shr1_idx_ );
     float shr1_starty = Event->shower_starty_->at( pi0_shr1_idx_ );
     float shr1_startz = Event->shower_startz_->at( pi0_shr1_idx_ );
-    MyPointer< TVector3 > shr1_start = TVector3 (shr1_startx, shr1_starty, shr1_startz);
-    MyPointer< TVector3 > dir1 = (*(shr1_start) - *(nu_vtx)).Unit();
+    *shr1_start_ = TVector3 (shr1_startx, shr1_starty, shr1_startz);
+    *dir1_ = (*(shr1_start_) - *(nu_vtx_)).Unit();
 
-    float shr1_energy = Event->shower_energy_->at( pi0_shr1_idx_ );
-    MyPointer< TVector3 > p3_gamma1 = (*(dir1)) * shr1_energy;
-
+    float shr1_energy = Event->shr_energy_cali_;
+    *p3_gamma1_ = (*(dir1_)) * shr1_energy;
     //photon 2
     float shr2_startx = Event->shower_startx_->at( pi0_shr2_idx_ );
     float shr2_starty = Event->shower_starty_->at( pi0_shr2_idx_ );
     float shr2_startz = Event->shower_startz_->at( pi0_shr2_idx_ );
-    MyPointer< TVector3 > shr2_start = TVector3 (shr2_startx, shr2_starty, shr2_startz);
-    MyPointer< TVector3 > dir2 = (*(shr2_start) - *(nu_vtx)).Unit();
+    *shr2_start_ = TVector3 (shr2_startx, shr2_starty, shr2_startz);
+    *dir2_ = (*(shr2_start_) - *(nu_vtx_)).Unit();
 
-    float shr2_energy = Event->shower_energy_->at( pi0_shr2_idx_ );
-    MyPointer< TVector3 > p3_gamma2 = (*(dir2)) * shr2_energy;
+    float shr2_energy = Event->shr_energy_second_cali_;
+    *p3_gamma2_ = (*(dir2_)) * shr2_energy;
 
     //neutral pion 3-momentum is sum of the two photon 3-momenta
-    *p3pi0_ = *(p3_gamma1) + *(p3_gamma2);
+    *p3pi0_ = *(p3_gamma1_) + *(p3_gamma2_);
     float pi0_mom = p3pi0_->Mag();
     float KE_pi0 = real_sqrt( pi0_mom*pi0_mom + PI_ZERO_MASS*PI_ZERO_MASS ) - PI_ZERO_MASS;
 
@@ -339,8 +342,9 @@ void CC1mu1pi1pi0::compute_reco_observables( AnalysisEvent* Event ) {
   if ( muon && pion && neutral_pion) {
     double MuonEnergy = real_sqrt( p3mu->Mag()*p3mu->Mag()
       + MUON_MASS*MUON_MASS );
+    double ProtonEnergy = 0.;
     if (lead_p){
-      double ProtonEnergy	= real_sqrt( p3p->Mag()*p3p->Mag()
+      ProtonEnergy	= real_sqrt( p3p->Mag()*p3p->Mag()
         + PROTON_MASS*PROTON_MASS );
     }
 
@@ -348,7 +352,9 @@ void CC1mu1pi1pi0::compute_reco_observables( AnalysisEvent* Event ) {
     double Pi0Energy = real_sqrt( p3pi0_->Mag()*p3pi0_->Mag() + PI_ZERO_MASS*PI_ZERO_MASS );
 
     STVTools stv_tools;
-    stv_tools.CalculateSTVs( *p3mu, *p3p, *p3cpi_, MuonEnergy, ProtonEnergy, PionEnergy, calc_type );
+    if (lead_p){
+      stv_tools.CalculateSTVs( *p3mu, *p3p, MuonEnergy, ProtonEnergy, calc_type );
+    }
 
     delta_pT_ = stv_tools.ReturnPt();
     delta_phiT_ = stv_tools.ReturnDeltaPhiT() * TMath::Pi()/180.;
@@ -374,9 +380,9 @@ bool CC1mu1pi1pi0::define_signal( AnalysisEvent* Event ) {
 
   sig_muonInMomRange_ = false;
 
-  sig_nProtons_in_Momentum_range = 0;
-  sig_nCharPions_in_Momentum_range = 0;
-  sig_nNeutPions_in_Momentum_range = 0;
+  sig_nProtons_in_Momentum_range_ = 0;
+  sig_nCharPions_in_Momentum_range_ = 0;
+  sig_nNeutPions_in_Momentum_range_ = 0;
 
   double LeadProtonMomentum = 0.;
 
@@ -400,19 +406,19 @@ bool CC1mu1pi1pi0::define_signal( AnalysisEvent* Event ) {
       double mom = real_sqrt( std::pow(energy, 2) - std::pow(PROTON_MASS, 2) );
       if ( mom > LeadProtonMomentum ) LeadProtonMomentum = mom;
       if ( mom >= LEAD_P_MIN_MOM_CUT && mom <= LEAD_P_MAX_MOM_CUT ) {
-        sig_nProtons_in_Momentum_range++;
+        sig_nProtons_in_Momentum_range_++;
       }
     }
     else if ( pdg == PI_ZERO ) {
       double mom = real_sqrt( std::pow(energy, 2) - std::pow(PI_ZERO_MASS, 2) );
       if ( mom > NEUTRAL_PI_MOM_CUT ) {
-        sig_nNeutPions_in_Momentum_range++;
+        sig_nNeutPions_in_Momentum_range_++;
       }
     }
     else if ( std::abs(pdg) == PI_PLUS ) {
       double mom = real_sqrt( std::pow(energy, 2) - std::pow(PI_PLUS_MASS, 2) );
       if ( mom > CHARGED_PI_MOM_CUT ) {
-        sig_nCharPions_in_Momentum_range++;
+        sig_nCharPions_in_Momentum_range_++;
       }
     }
   }
@@ -480,8 +486,6 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   // is handled later.
   std::vector<int> muon_candidate_indices;
   std::vector<int> muon_pid_scores;
-  std::vector<int> muon_lengths;
-  std::vector<int> muon_bdt_scores;
 
   for ( int p = 0; p < Event->num_pf_particles_; ++p ) {
     // Only direct neutrino daughters (generation == 2) will be considered as
@@ -493,7 +497,6 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
     float start_dist = Event->track_start_distance_->at( p );
     float track_length = Event->track_length_->at( p );
     float pid_score = Event->track_llr_pid_score_->at( p );
-    float bdt_score = Event->muon_BDT_score_->at( p );
 
     if ( track_score > MUON_TRACK_SCORE_CUT
       && start_dist < MUON_VTX_DISTANCE_CUT
@@ -502,8 +505,6 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
     {
       muon_candidate_indices.push_back( p );
       muon_pid_scores.push_back( pid_score );
-      muon_lengths.push_back( track_length );
-      muon_bdt_scores.push_back( bdt_score );	
     }
   }
 
@@ -512,47 +513,26 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
 
   if ( num_candidates == 1u ) {
     muon_candidate_pid_idx_ = muon_candidate_indices.front();
-    muon_candidate_length_idx_ = muon_candidate_indices.front();
-    muon_candidate_bdt_idx_ = muon_candidate_indices.front();
   }
   else if ( num_candidates > 1u ) {
     // In the case of multiple muon candidates, choose the one with the highest
     // PID score (most muon-like) as the one to use
     float highest_score = LOW_FLOAT;
     int chosen_index_pid = BOGUS_INDEX;
-    float longest = LOW_FLOAT;
-    int chosen_index_length = BOGUS_INDEX;
-    float most_muon_like = BOGUS + 1. ;
-    int chosen_index_bdt = BOGUS_INDEX;
 
     for ( size_t c = 0; c < num_candidates; ++c ) {
       float score = muon_pid_scores.at( c );
-      float length = muon_lengths.at( c );
-      float muon_bdt_score = muon_bdt_scores.at( c );
 
       if ( highest_score < score ) {
         highest_score = score;
         chosen_index_pid = muon_candidate_indices.at( c );
       }
     }
-    if ( longest < length ) {
-        longest = length;
-        chosen_index_length = muon_candidate_indices.at( c );
-      }
-  
-      if (most_muon_like > muon_bdt_score ) {
-        most_muon_like = muon_bdt_score;
-        chosen_index_bdt = muon_candidate_indices.at( c );
-      }
-    }
+    
     muon_candidate_pid_idx_ = chosen_index_pid;
-    muon_candidate_length_idx_ = chosen_index_length;
-    muon_candidate_bdt_idx_ = chosen_index_bdt;
   }
   else {
     muon_candidate_pid_idx_ = BOGUS_INDEX;
-    muon_candidate_length_idx_ = BOGUS_INDEX;
-    muon_candidate_bdt_idx_ = BOGUS_INDEX;
   }
 
   sel_nu_mu_cc_ = sel_reco_vertex_in_FV_ && sel_pfp_starts_in_PCV_
@@ -561,7 +541,6 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   int reco_gen2_shower_count = 0;
   int reco_gen3_shower_count = 0;
   int reco_track_count = 0;
-  int n_non_proton_like = 0;
 
   for ( int p = 0; p < Event->num_pf_particles_; ++p ) { 
     
@@ -575,8 +554,8 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
     // Only check direct neutrino daughters (generation == 2)
     if ( generation != 2u ) continue;
 
-    float proton_score = Event->proton_BDT_score_->at ( p );
-    if ( proton_score < PROTON_BDT_CUT) ++n_non_proton_like;
+    //float proton_score = Event->proton_BDT_score_->at ( p );
+    //if ( proton_score < PROTON_BDT_CUT) ++n_non_proton_like;
 
     float tscore = Event->pfp_track_score_->at( p );
     if ( tscore <= TRACK_SCORE_CUT ) ++reco_gen2_shower_count;
@@ -593,8 +572,8 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   n_reco_tracks_ = reco_track_count;
   
   // Check we have 2 non proton like daugthers
-  sel_2_non_proton_ = (n_non_proton_like == 2);
-  int n_non_proton_like_ = n_non_proton_like;
+  //sel_2_non_proton_ = (n_non_proton_like == 2);
+  //int n_non_proton_like_ = n_non_proton_like;
 
   // If we have at least 2 non-proton like tracks, and 1 or 2 showers from possible pi0 find pion candidate
   // Only bother to do it if these conditions are left to save computational time
@@ -604,8 +583,8 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   sel_has_pion_candidate_ = false;
   sel_has_pi0_candidate_ = false;
 
-  if ( sel_no_gen2_reco_showers_ && sel_min_2_tracks_ && sel_2_non_proton_ && sel_gen3_reco_showers_){
-    float current_proton_bdt_score = 1.1; 
+  if ( sel_no_gen2_reco_showers_ && sel_min_2_tracks_ && sel_gen3_reco_showers_){
+    //float current_proton_bdt_score = 1.1; 
     int current_pion_candidate_idx_ = BOGUS_INDEX;
 
     for (int p = 0; p < Event->num_pf_particles_; ++p) {
@@ -622,18 +601,18 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
       float track_length = Event->track_length_->at( p );
       if (track_length <= 0. ) continue;
 
-      float proton_bdt_score = Event->proton_BDT_score_->at ( p );
+      //float proton_bdt_score = Event->proton_BDT_score_->at ( p );
 
       // Skip particles for which BDT score could not be calculated
       // Use BOGUS - 1 to avoid compring floating point numbers
-      if ( proton_bdt_score > BOGUS - 1. ) continue; 
+      //if ( proton_bdt_score > BOGUS - 1. ) continue; 
 
 
-      if ( proton_bdt_score < current_proton_bdt_score) {
-        sel_has_pion_candidate_ = true; 
-        current_pion_candidate_idx_ = p;
-        current_proton_bdt_score = proton_bdt_score;       
-      }
+      //if ( proton_bdt_score < current_proton_bdt_score) {
+      sel_has_pion_candidate_ = true; 
+      current_pion_candidate_idx_ = p;
+      //current_proton_bdt_score = proton_bdt_score;       
+      //}
     }
 
     // set pion candidate index
@@ -653,7 +632,7 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
         //energy cuts on pi0 showers
         if (Event->shr_energy_cali_ > NEUTRAL_PI_SHR1_ENERGY_CUT && Event->shr_energy_second_cali_ > NEUTRAL_PI_SHR2_ENERGY_CUT){
           //dE/dx cut on primary shower
-          if (Event->shr_tkfit_2cm_dedx_Y_ > NEUTRAL_PI_SHR1_DEDX_CUT){
+          if (Event->shr_tkfit_2cm_dedx_Y_ > NEUTRAL_PI_SHR_DEDX_CUT){
             sel_has_pi0_candidate_ = true;
             pi0_shr1_idx_ = pi0_shr1_cand_;
             pi0_shr2_idx_ = pi0_shr2_cand_;
@@ -715,7 +694,7 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
     if ( generation != 2u ) continue;
 
     float start_dist = Event->track_start_distance_->at( p );
-    if ( start_dist > PFP_DISTANCE_CUT ) sel_all_pfp_in_vtx_proximity_ = false;
+    //if ( start_dist > PFP_DISTANCE_CUT ) sel_all_pfp_in_vtx_proximity_ = false;
 
     float startx = Event->track_startx_->at( p );
     float starty = Event->track_starty_->at( p );
@@ -785,7 +764,7 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
 
       // pion momentum calibration
       float trk_length = Event->track_length_->at( pion_candidate_idx_ ); 
-      pion_mom =  A + B*trk_length - C*std::pow(trk_length, -1.*D); 
+      pion_mom =  real_sqrt( trk_length*trk_length + 2.*PI_PLUS_MASS*trk_length );
       if ( pion_mom >= CHARGED_PI_MOM_CUT) {
         sel_pion_passed_mom_cuts_ = true;
       }
@@ -823,8 +802,8 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
       if ( track_length > lead_p_track_length ) {
         lead_p_track_length = track_length;
         lead_p_index = p;
+      }
     }
-
   }
 
   // Don't bother to apply the cuts that involve the leading
@@ -836,8 +815,8 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   // All that remains is to apply the leading proton candidate cuts. We could
   // search for it above, but doing it here makes the code more readable (with
   // likely negligible impact on performance)
-  float lead_p_track_length = LOW_FLOAT;
-  size_t lead_p_index = 0u;
+  lead_p_track_length = LOW_FLOAT;
+  lead_p_index = 0u;
   for ( int p = 0; p < Event->num_pf_particles_; ++p ) {
 
     // Only check direct neutrino daughters (generation == 2)
@@ -873,8 +852,7 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   float range_mom_lead_p = real_sqrt( lead_p_KE*lead_p_KE
     + 2.*PROTON_MASS*lead_p_KE );
   if ( range_mom_lead_p >= LEAD_P_MIN_MOM_CUT
-    && range_mom_lead_p <= LEAD_P_MAX_MOM_CUT )
-  {
+    && range_mom_lead_p <= LEAD_P_MAX_MOM_CUT ){
     sel_lead_p_passed_mom_cuts_ = true;
   }
 
@@ -883,7 +861,7 @@ bool CC1mu1pi1pi0::selection( AnalysisEvent* Event ) {
   // candidate)
   bool sel_CC1pi1pi0_ = sel_nu_mu_cc_ && sel_no_gen2_reco_showers_ && sel_gen3_reco_showers_
     && sel_muon_passed_mom_cuts_ && sel_muon_contained_ && sel_muon_quality_ok_
-    && sel_min_2_tracks_ && sel_2_non_proton_ && sel_has_pion_candidate_;
+    && sel_min_2_tracks_ && sel_has_pion_candidate_;
     //&& sel_has_p_candidate_ && sel_all_pfp_contained_&& sel_all_pfp_in_vtx_proximity_
 
   return sel_CC1pi1pi0_;
@@ -934,7 +912,7 @@ int CC1mu1pi1pi0::categorize_event(AnalysisEvent* Event) {
       else if (Event->mc_nu_interaction_type_ == 3) {
         return kNuMuCC1pi1pi0_CCCOH; // COH
       }
-      else return kNuMuCC1pi1pi0_CCOther;
+      else return kNuMuCC1pi1pi0_Other;
   }
   return kNuMuCCOther;
 }
@@ -948,9 +926,8 @@ void CC1mu1pi1pi0::define_output_branches() {
   set_branch( &sig_noFSMesons_, "mc_no_FS_mesons" );
 
   set_branch( &sig_mc_no_fs_pi0_, "mc_no_pi0s" );
-  set_branch( &sig_nProtons_in_Momentum_range,
-    "nProtons_in_Momentum_range" );
-  set_branch( &sig_nCpi_in_Momentum_range_, "nCpi_in_Momentum_range" );
+  set_branch( &sig_nProtons_in_Momentum_range_, "nProtons_in_Momentum_range" );
+  set_branch( &sig_nCharPions_in_Momentum_range_, "nCpi_in_Momentum_range" );
 
   set_branch( &sel_reco_vertex_in_FV_, "reco_vertex_in_FV" );
   set_branch( &sel_pfp_starts_in_PCV_, "pfp_starts_in_PCV" );
@@ -977,12 +954,10 @@ void CC1mu1pi1pi0::define_output_branches() {
   set_branch( &sel_tracks_flipped_, "tracks_flipped" );
 
   set_branch( &n_reco_tracks_, "n_reco_tracks" );
-  set_branch( &n_non_proton_like_, "n_non_proton_like" );
 
   set_branch( &lead_p_candidate_idx_, "lead_p_candidate_idx" );
   set_branch( &muon_candidate_pid_idx_, "muon_candidate_pid_idx" );
   set_branch( &muon_candidate_length_idx_, "muon_candidate_length_idx" );
-  set_branch( &muon_candidate_bdt_idx_, "muon_candidate_bdt_idx" );
   set_branch( &pion_candidate_idx_, "pion_candidate_idx" );
 
   set_branch( &delta_pT_, "reco_delta_pT" );
@@ -1008,8 +983,8 @@ void CC1mu1pi1pi0::define_output_branches() {
   set_branch( &mc_delta_pTy_, "true_delta_pTy" );
   set_branch( &mc_theta_mu_p_, "true_theta_mu_p" );
 
-  set_branch( mc_p3mu, "true_p3_mu" );
-  set_branch( mc_p3p, "true_p3_lead_p" );
+  set_branch( mc_p3mu_, "true_p3_mu" );
+  set_branch( mc_p3p_, "true_p3_lead_p" );
   set_branch( mc_p3cpi_, "true_p3_cpi" );
   set_branch( mc_p3_p_vec_, "true_p3_p_vec" );
   set_branch( mc_p3_cpi_vec_, "true_p3_cpi_vec" );
@@ -1022,8 +997,8 @@ void CC1mu1pi1pi0::reset() {
   sig_leadProtonMomInRange_ = false;
   sig_muonInMomRange_ = false;
   sig_noFSMesons_ = false;
-  sig_nProtons_in_Momentum_range = BOGUS_INDEX;
-  sig_nCpi_in_Momentum_range_ = BOGUS_INDEX;
+  sig_nProtons_in_Momentum_range_ = BOGUS_INDEX;
+  sig_nCharPions_in_Momentum_range_ = BOGUS_INDEX;
 
   sel_reco_vertex_in_FV_ = false;
   sel_pfp_starts_in_PCV_ = false;
@@ -1054,14 +1029,11 @@ void CC1mu1pi1pi0::reset() {
   
 
   n_reco_tracks_ = BOGUS_INDEX;
-  n_non_proton_like_ = BOGUS_INDEX;
 
   lead_p_candidate_idx_ = BOGUS_INDEX;
   muon_candidate_pid_idx_ = BOGUS_INDEX;
   muon_candidate_length_idx_ = BOGUS_INDEX;
-  muon_candidate_bdt_idx_ = BOGUS_INDEX;
   pion_candidate_idx_ = BOGUS_INDEX;
-  neutral_pi0_candidate_idx_ = BOGUS_INDEX;
   pi0_shr1_idx_ = BOGUS_INDEX;
   pi0_shr2_idx_ = BOGUS_INDEX;
 

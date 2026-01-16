@@ -3,12 +3,11 @@
 // XSecAnalyzer includes
 #include "XSecAnalyzer/Selections/SelectionBase.hh"
 
-class CC1muNp1pi1pi0 : public SelectionBase {
+class CC1mu1pi1pi0 : public SelectionBase {
 
 public:
 
-  CC1muNp1pi1pi0();
-
+  CC1mu1pi1pi0();
   virtual int categorize_event( AnalysisEvent* Event ) override final;
   virtual bool selection( AnalysisEvent* Event ) override final;
   virtual bool define_signal( AnalysisEvent* Event ) override final;
@@ -28,9 +27,9 @@ private:
   bool sig_noFSMesons_;
   bool sig_mc_no_fs_pi0_;
   bool sig_mc_no_charged_pi_above_threshold_;
-  int sig_nProtons_in_Momentum_range;
-  int sig_nCharPions_in_Momentum_range;
-  int sig_nNeutPions_in_Momentum_range;
+  int sig_nProtons_in_Momentum_range_;
+  int sig_nCharPions_in_Momentum_range_;
+  int sig_nNeutPions_in_Momentum_range_;
 
   bool sel_reco_vertex_in_FV_;
   bool sel_pfp_starts_in_PCV_;
@@ -67,6 +66,8 @@ private:
   int pi0_shr1_idx_;
   int pi0_shr2_idx_;
 
+  int n_reco_tracks_;
+
   double delta_pT_;
   double delta_phiT_;
   double delta_alphaT_;
@@ -80,6 +81,13 @@ private:
   MyPointer< TVector3 > p3p;
   MyPointer< TVector3 > p3cpi_;
   MyPointer< TVector3 > p3pi0_;
+  MyPointer< TVector3 > nu_vtx_;
+  MyPointer< TVector3 > shr1_start_;
+  MyPointer< TVector3 > shr2_start_;
+  MyPointer< TVector3 > dir1_;
+  MyPointer< TVector3 > dir2_;
+  MyPointer< TVector3 > p3_gamma1_;
+  MyPointer< TVector3 > p3_gamma2_;
   MyPointer< std::vector< TVector3 > > p3_p_vec_;
 
   double mc_delta_pT_;
@@ -91,12 +99,19 @@ private:
   double mc_delta_pTy_;
   double mc_theta_mu_p_;
 
-  MyPointer< TVector3 > mc_p3mu;
-  MyPointer< TVector3 > mc_p3p;
-  MyPointer< TVector3 > mc_p3cpi;
-  MyPointer< TVector3 > mc_p3pi0;
+  bool mc_golden_;
+  bool mc_pi_stopping_;
+  bool mc_pi0_stopping_;
+
+  int mc_n_protons_;
+
+  MyPointer< TVector3 > mc_p3mu_;
+  MyPointer< TVector3 > mc_p3p_;
+  MyPointer< TVector3 > mc_p3cpi_;
+  MyPointer< TVector3 > mc_p3pi0_;
   MyPointer< std::vector< TVector3 > > mc_p3_p_vec_;
   MyPointer< std::vector< TVector3 > > mc_p3_cpi_vec_;
+  MyPointer< std::vector< TVector3 > > mc_p3_pi0_vec_;
 
   STVCalcType calc_type;
 };

@@ -158,6 +158,9 @@ public:
   MyPointer< std::vector<float> > mc_nu_daughter_px_;
   MyPointer< std::vector<float> > mc_nu_daughter_py_;
   MyPointer< std::vector<float> > mc_nu_daughter_pz_;
+  MyPointer< std::vector<float> > mc_end_p_;
+  MyPointer< std::vector<int> > mc_n_elastic_;
+  MyPointer< std::vector<int> > mc_n_inelastic_;
 
   // General systematic weights
   MyPointer< std::map< std::string, std::vector<double> > > mc_weights_map_;
